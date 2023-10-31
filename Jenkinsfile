@@ -1,20 +1,21 @@
 pipeline {
     agent any
 
-    environment {
-        BRANCH_NAME = "${env.CHANGE_ID}" // The deleted branch name or null if no branch was deleted
-    }
-
     stages {
-        stage('Handle Branch Deletion') {
+        stage('Handle GitHub Webhook') {
             when {
-                expression { BRANCH_NAME != null }
+                expression { currentBuild.rawBuild.getCause('BranchEventCause') }
             }
             steps {
                 script {
-                    echo "Branch '${BRANCH_NAME}' was deleted."
-                    
-                    // Perform actions based on the deleted branch
+                    def branchCause = currentBuild.rawBuild.getCause('BranchEventCause')
+                    def event = branchCause.getEvent()
+                    def deletedBranch = branchCause.getBranch()
+
+                    echo "GitHub Event Type: ${event}"
+                    echo "Deleted Branch Name: ${deletedBranch}"
+
+                    // Now you can perform actions based on the event and branch name
                     // For example, trigger specific Jenkins jobs or perform cleanup tasks
                 }
             }
